@@ -1,63 +1,44 @@
 from Card import Card
+import random
+from DeckOfCards import DeckOfCards
 
 
 class Player:
-    def __init__(self, name, hand=None):
-        """
-        Initializes a Player object with a name and an optional initial hand.
-
-        :param name: The name of the player.
-        :param hand: A list of Card objects to initialize the player's hand (default is empty).
-        :raises ValueError: If any item in the provided list is not a Card object.
-        """
+    def __init__(self, name, card_amount=26):
+        if not isinstance(card_amount, int):
+            raise TypeError('card_amount must be an integer')
+        if not isinstance(name, str):
+            raise TypeError('name must be a string')
+        # Initialize Player with a name and a number of cards
         self.name = name
-        if hand is None:
-            self.hand = []  # Empty list of Card objects
-        else:
-            if not all(isinstance(card, Card) for card in hand):
-                raise ValueError("All items in the hand must be Card objects.")
-            self.hand = hand
+        if not (10 <= card_amount <= 26):
+            card_amount = 26
+        self.card_amount = card_amount
+        self.deck_of_cards = []
 
     def __str__(self):
-        """
-        Returns a string representation of the player and their hand.
-
-        :return: A string in the format "Player: [name], Hand: [cards]".
-        """
-        hand_str = ", ".join(str(card) for card in self.hand)
+        # Return a string showing the player's name and their hand of cards.
+        hand_str = ", ".join(str(card) for card in self.deck_of_cards)
         return f"Player: {self.name}, Hand: {hand_str if hand_str else 'No Cards'}"
 
     def add_card(self, card):
-        """
-        Adds a card to the player's hand.
-        :param card: A Card object to be added to the hand.
-        :raises ValueError: If the provided object is not a Card.
-        """
+        # Add a Card object to the player's hand.
+        # Raise ValueError if the input is not a Card.
         if not isinstance(card, Card):
             raise ValueError("Only Card objects can be added to the hand.")
-        self.hand.append(card)
+        self.deck_of_cards.append(card)
 
-    def get_card(self, index):
-        """
-        Removes the card from the player's hand at a specific index.
-
-        :param index: The index of the card to remove.
-        :return: The Card object removed from the hand.
-        :raises IndexError: If the index is out of range or the hand is empty.
-        """
-        if not self.hand:
+    def get_card(self):
+        if not self.deck_of_cards:
             raise IndexError(f"{self.name} has no cards to remove.")
-        if index < 0 or index >= len(self.hand):
-            raise IndexError(f"Invalid card index: {index}.")
-        return self.hand.pop(index)  # Removes and returns the card at the given index
+        card = random.choice(self.deck_of_cards)
+        self.deck_of_cards.remove(card)
+        return card
 
     def set_hand(self, cards):
-        """
-        Sets the player's hand to a new list of cards.
+        # Replace the player's hand with cards dealt from a DeckOfCards object
+        if not isinstance(cards, DeckOfCards):
+            raise TypeError('cards must be a DeckOfCards object')
 
-        :param cards: A list of Card objects to set as the player's hand.
-        :raises ValueError: If any item in the provided list is not a Card object.
-        """
-        if not all(isinstance(card, Card) for card in cards):
-            raise ValueError("All items in the hand must be Card objects.")
-        self.hand = cards
+        self.deck_of_cards = [cards.deal_one() for _ in range(self.card_amount)]
+
